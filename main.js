@@ -3,8 +3,23 @@ var SUB_DOMAIN   = PropertiesService.getScriptProperties().getProperty("SUB_DOMA
 var MAIL_ADDRESS = PropertiesService.getScriptProperties().getProperty("MAIL_ADDRESS");
 
 function main() {
-  var tickets = apiRequestToZendesk('tickets.json');
+  var response = apiRequestToZendesk('tickets.json');
+  var tickets = response.tickets.map(function (ticket) {
+    return [
+      ticket.id,
+      ticket.brand_id,
+      ticket.subject,
+      ticket.description,
+      ticket.tags.join(','),
+      ticket.created_at,
+      ticket.updated_at,
+    ];
+  });
   Logger.log(tickets);
+  SpreadsheetApp.getActiveSpreadsheet()
+    .getSheetByName("tickets")
+    .getRange('A1:G' + tickets.length)
+    .setValues(tickets);
 }
 
 function apiRequestToZendesk(resource) {
