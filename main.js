@@ -1,6 +1,10 @@
-var API_TOKEN    = PropertiesService.getScriptProperties().getProperty("API_TOKEN");
-var SUB_DOMAIN   = PropertiesService.getScriptProperties().getProperty("SUB_DOMAIN");
-var MAIL_ADDRESS = PropertiesService.getScriptProperties().getProperty("MAIL_ADDRESS");
+var properties   = PropertiesService.getScriptProperties(),
+    API_TOKEN    = properties.getProperty("API_TOKEN"),
+    SUB_DOMAIN   = properties.getProperty("SUB_DOMAIN"),
+    MAIL_ADDRESS = properties.getProperty("MAIL_ADDRESS"),
+    RUNTIME = 5,// 実行時間（分）
+    TRIGGER = 'TRIGGER',
+    START_INDEX = 'START_INDEX';
 
 function fetchTickets() {
   /*
@@ -33,21 +37,32 @@ function fetchTickets() {
     .getSheetByName("tickets")
     .getRange('A1:G' + tickets.length)
     .setValues(tickets);
+
+  registerTrigger(TRIGGER, 'fetchTicketComments');
 }
 
 function fetchTicketComments() {
-  var tickets = SpreadsheetApp.getActiveSpreadsheet()
-    .getSheetByName("tickets")
-    .getDataRange()
-    .getValues();
+  const startTime = new Date();
+  var tickets = SpreadsheetApp
+                  .getActiveSpreadsheet()
+                  .getSheetByName("tickets")
+                  .getDataRange()
+                  .getValues(),
+      comments = SpreadsheetApp
+                  .getActiveSpreadsheet()
+                  .getSheetByName("comments")
+                  .getDataRange()
+                  .getValues(),
+      startIndex = parseInt(properties.getProperty(START_INDEX)) || 0;
+
   tickets.shift();
-  //var latestTicketId = tickets[0][0];// データの先頭行の 1 列目
+  comments.shift();
 
-  var comments = [];
+  for (var i = startIndex; i < tickets.length; i++) {
+    var ticket = tickets[i],
+        ticketId = ticket[0],
+        page = 1;
 
-  tickets.forEach(function (ticket) {
-    var ticketId = ticket[0];
-    var page = 1;
     do {
       var response = apiRequestToZendesk('tickets/' + ticketId + '/comments.json', '?sort_by=created_at&sort_order=desc&page=' + page);
       comments = comments.concat(response.comments.map(function (comment) {
@@ -61,13 +76,34 @@ function fetchTicketComments() {
       }));
       page++;
     } while (response.next_page != null);
-  });
 
+    console.log(i);
+
+    // RUNTIME を超えたら break;
+    if ((new Date() - startTime) / (1000 * 60) > RUNTIME) {
+      startIndex = i+1;
+      break;
+    }
+
+    // 最後まで処理したら次回の開始 index を 0 にセット
+    if (i === tickets.length-1) {
+      startIndex = 0;
+    }
+  }
+
+  // スプレッドシートに保存
   comments.unshift(['ID', 'Ticket ID', 'Author ID', 'Body', 'Created at']);
   SpreadsheetApp.getActiveSpreadsheet()
     .getSheetByName("comments")
     .getRange('A1:E' + comments.length)
     .setValues(comments);
+
+  properties.setProperty(START_INDEX, startIndex);
+  deleteTrigger(TRIGGER);
+
+  if (startIndex !== 0) {
+    registerTrigger(TRIGGER, 'fetchTicketComments');
+  }
 }
 
 function apiRequestToZendesk(resource, query) {
