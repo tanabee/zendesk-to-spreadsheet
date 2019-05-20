@@ -61,6 +61,9 @@ function fetchTicketComments() {
   // 先頭行の除去
   tickets.shift();
   comments.shift();
+  var commentIds = comments.map(function (row) {
+    return row[0];
+  });
 
   for (var i = startIndex; i < tickets.length; i++) {
     var ticket = tickets[i],
@@ -70,7 +73,11 @@ function fetchTicketComments() {
     // 特定のチケットのコメント一覧を取得
     do {
       var response = apiRequestToZendesk('tickets/' + ticketId + '/comments.json', '?sort_by=created_at&sort_order=desc&page=' + page);
-      comments = comments.concat(response.comments.map(function (comment) {
+      var newComments = response.comments
+        .filter(function (comment) {
+          return commentIds.indexOf(comment.id) === -1;
+        })
+        .map(function (comment) {
         return [
           comment.id,
           ticketId,
@@ -78,7 +85,8 @@ function fetchTicketComments() {
           comment.body,
           toDate(comment.created_at),
         ];
-      }));
+      });
+      comments = comments.concat(newComments);
       page++;
     } while (response.next_page != null);
 
