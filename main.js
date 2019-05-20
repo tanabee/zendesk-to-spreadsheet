@@ -3,7 +3,7 @@ var SUB_DOMAIN   = PropertiesService.getScriptProperties().getProperty("SUB_DOMA
 var MAIL_ADDRESS = PropertiesService.getScriptProperties().getProperty("MAIL_ADDRESS");
 
 function main() {
-  var response = apiRequestToZendesk('tickets.json');
+  var response = apiRequestToZendesk('tickets.json', '?sort_by=created_at&sort_order=desc');
   var tickets = response.tickets.map(function (ticket) {
     return [
       ticket.id,
@@ -22,7 +22,7 @@ function main() {
     .setValues(tickets);
 }
 
-function apiRequestToZendesk(resource) {
+function apiRequestToZendesk(resource, query) {
   var options = {
     'method': 'get',
     'contentType': 'application/json',
@@ -30,6 +30,6 @@ function apiRequestToZendesk(resource) {
       'Authorization': 'Basic ' + Utilities.base64Encode( MAIL_ADDRESS + '/token:' + API_TOKEN )
     }
   };
-  var res = UrlFetchApp.fetch('https://' + SUB_DOMAIN + '.zendesk.com/api/v2/' + resource, options);
+  var res = UrlFetchApp.fetch('https://' + SUB_DOMAIN + '.zendesk.com/api/v2/' + resource + query, options);
   return JSON.parse(res)
 }
