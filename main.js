@@ -28,11 +28,46 @@ function fetchTickets() {
     }));
     page++;
   } while (response.next_page != null);
-  tickets.unshift(['ID', 'Brand ID', 'Subject', 'Description', 'Tags', 'created_at', 'updated_at']);
+  tickets.unshift(['ID', 'Brand ID', 'Subject', 'Description', 'Tags', 'Created at', 'Updated at']);
   SpreadsheetApp.getActiveSpreadsheet()
     .getSheetByName("tickets")
     .getRange('A1:G' + tickets.length)
     .setValues(tickets);
+}
+
+function fetchTicketComments() {
+  var tickets = SpreadsheetApp.getActiveSpreadsheet()
+    .getSheetByName("tickets")
+    .getDataRange()
+    .getValues();
+  tickets.shift();
+  //var latestTicketId = tickets[0][0];// データの先頭行の 1 列目
+
+  var comments = [];
+
+  tickets.forEach(function (ticket) {
+    var ticketId = ticket[0];
+    var page = 1;
+    do {
+      var response = apiRequestToZendesk('tickets/' + ticketId + '/comments.json', '?sort_by=created_at&sort_order=desc&page=' + page);
+      comments = comments.concat(response.comments.map(function (comment) {
+        return [
+          comment.id,
+          ticketId,
+          comment.author_id,
+          comment.body,
+          comment.created_at,
+        ];
+      }));
+      page++;
+    } while (response.next_page != null);
+  });
+
+  comments.unshift(['ID', 'Ticket ID', 'Author ID', 'Body', 'Created at']);
+  SpreadsheetApp.getActiveSpreadsheet()
+    .getSheetByName("comments")
+    .getRange('A1:E' + comments.length)
+    .setValues(comments);
 }
 
 function apiRequestToZendesk(resource, query) {
@@ -44,5 +79,5 @@ function apiRequestToZendesk(resource, query) {
     }
   };
   var res = UrlFetchApp.fetch('https://' + SUB_DOMAIN + '.zendesk.com/api/v2/' + resource + query, options);
-  return JSON.parse(res)
+  return JSON.parse(res);
 }
