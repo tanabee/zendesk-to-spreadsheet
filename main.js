@@ -6,17 +6,13 @@ var properties   = PropertiesService.getScriptProperties(),
     TRIGGER = 'TRIGGER',
     START_INDEX = 'START_INDEX';
 
+// チケット一覧の取得
 function fetchTickets() {
-  /*
-  var tickets = SpreadsheetApp.getActiveSpreadsheet()
-    .getSheetByName("tickets")
-    .getDataRange()
-    .getValues();
-  var latestTicketId = tickets[1][0];// データの先頭行の 1 列目
-  */
 
   var tickets = [];
   var page = 1;
+
+  // チケット一覧を取得（ページ数分まわす）
   do {
     var response = apiRequestToZendesk('tickets.json', '?sort_by=created_at&sort_order=desc&page=' + page);
     tickets = tickets.concat(response.tickets.map(function (ticket) {
@@ -32,17 +28,24 @@ function fetchTickets() {
     }));
     page++;
   } while (response.next_page != null);
+
+  // スプレッドシートに保存
   tickets.unshift(['ID', 'Brand ID', 'Subject', 'Description', 'Tags', 'Created at', 'Updated at']);
   SpreadsheetApp.getActiveSpreadsheet()
     .getSheetByName("tickets")
     .getRange('A1:G' + tickets.length)
     .setValues(tickets);
 
+  // チケットコメント一覧を取得するトリガーをセットして終了
   registerTrigger(TRIGGER, 'fetchTicketComments');
 }
 
+// チケット内のコメント一覧の取得
 function fetchTicketComments() {
+
+  // RUNTIME を超過した時に処理を中断するために開始時間を取る
   const startTime = new Date();
+
   var tickets = SpreadsheetApp
                   .getActiveSpreadsheet()
                   .getSheetByName("tickets")
@@ -55,6 +58,7 @@ function fetchTicketComments() {
                   .getValues(),
       startIndex = parseInt(properties.getProperty(START_INDEX)) || 0;
 
+  // 先頭行の除去
   tickets.shift();
   comments.shift();
 
@@ -63,6 +67,7 @@ function fetchTicketComments() {
         ticketId = ticket[0],
         page = 1;
 
+    // 特定のチケットのコメント一覧を取得
     do {
       var response = apiRequestToZendesk('tickets/' + ticketId + '/comments.json', '?sort_by=created_at&sort_order=desc&page=' + page);
       comments = comments.concat(response.comments.map(function (comment) {
@@ -101,11 +106,13 @@ function fetchTicketComments() {
   properties.setProperty(START_INDEX, startIndex);
   deleteTrigger(TRIGGER);
 
+  // RUNTIME で中断した場合は、再取得用のトリガーセット
   if (startIndex !== 0) {
     registerTrigger(TRIGGER, 'fetchTicketComments');
   }
 }
 
+// Zendesk へ API リクエスト
 function apiRequestToZendesk(resource, query) {
   var options = {
     'method': 'get',
