@@ -22,8 +22,8 @@ function fetchTickets() {
         ticket.subject,
         ticket.description,
         ticket.tags.join(','),
-        ticket.created_at,
-        ticket.updated_at,
+        toDate(ticket.created_at),
+        toDate(ticket.updated_at),
       ];
     }));
     page++;
@@ -76,7 +76,7 @@ function fetchTicketComments() {
           ticketId,
           comment.author_id,
           comment.body,
-          comment.created_at,
+          toDate(comment.created_at),
         ];
       }));
       page++;
@@ -123,4 +123,9 @@ function apiRequestToZendesk(resource, query) {
   };
   var res = UrlFetchApp.fetch('https://' + SUB_DOMAIN + '.zendesk.com/api/v2/' + resource + query, options);
   return JSON.parse(res);
+}
+
+// スプレッドシートで日付として認識させるため 'YYYY-MM-DDTHH:MM:SSZ' 形式から 'YYYY-MM-DD HH:MM:SS' 形式に変換
+function toDate(str) {
+  return str.replace('T', ' ').replace('Z', '');
 }
