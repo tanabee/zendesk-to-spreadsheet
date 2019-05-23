@@ -6,6 +6,25 @@ var properties   = PropertiesService.getScriptProperties(),
     TRIGGER = 'TRIGGER',
     START_INDEX = 'START_INDEX';
 
+function doGet(e) {
+  if (!e.parameter.id) {
+    return HtmlService.createHtmlOutput('<h1>チケット ID を指定してください: [url]?id=[チケットID]</h1>');
+  }
+  var tickets = SpreadsheetApp
+                  .getActiveSpreadsheet()
+                  .getSheetByName("tickets")
+                  .getDataRange()
+                  .getValues()
+                  .filter(function (row) {
+                    return row[0] === Number(e.parameter.id);
+                  });
+  if (tickets.length === 0) {
+    return  HtmlService.createHtmlOutput('<h1>指定したチケットは存在しません</h1>');
+  }
+  var ticket = tickets[0];
+  return HtmlService.createHtmlOutput('<h1>' + ticket[2] + '</h1><p>' + ticket[3] + '</p><p>' + ticket[5] + '</p>');
+}
+
 // チケット一覧の取得
 function fetchTickets() {
 
