@@ -30,11 +30,14 @@ function doGet(e) {
                   .filter(function (row) {
                     return row[1] === ticket[0];
                   })
+                  .sort(function (a, b) {
+                    return (a[4] > b[4]) ? 1 : -1;
+                  })
                   .map(function (row) {
                     return '<p><strong>' + row[2] + ':' + row[4] + '</strong><br>' + row[3].replace(/\n/g, '<br>');
                   });
 
-  var contents = [ '<p><strong>' + ticket[3] + ': ' + ticket[5] + '</strong></p>' ].concat(comments);
+  var contents = [ '<p><strong>' + ticket[5] + '</strong><br>' + ticket[3] + '</p>' ].concat(comments);
   var html = HtmlService
     .createTemplateFromFile('template')
     .getRawContent()
