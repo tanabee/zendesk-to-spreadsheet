@@ -22,7 +22,6 @@ function doGet(e) {
     return  HtmlService.createHtmlOutput('<h1>指定したチケットは存在しません</h1>');
   }
   var ticket = tickets[0];
-
   var comments = SpreadsheetApp
                   .getActiveSpreadsheet()
                   .getSheetByName("comments")
@@ -30,12 +29,19 @@ function doGet(e) {
                   .getValues()
                   .filter(function (row) {
                     return row[1] === ticket[0];
+                  })
+                  .map(function (row) {
+                    return '<p><strong>' + row[2] + ':' + row[4] + '</strong><br>' + row[3].replace(/\n/g, '<br>');
                   });
 
-  var template = HtmlService.createTemplateFromFile('template');;
-  template.header = ticket[2];
-  template.contents = ticket[5] + ': ' + ticket[3];
-  return template.evaluate();
+  var contents = [ '<p><strong>' + ticket[3] + ': ' + ticket[5] + '</strong></p>' ].concat(comments);
+  var html = HtmlService
+    .createTemplateFromFile('template')
+    .getRawContent()
+    .replace('__HEADER__', ticket[2])
+    .replace('__CONTENTS__', contents.join(''));
+
+  return HtmlService.createHtmlOutput(html);
 }
 
 // チケット一覧の取得
