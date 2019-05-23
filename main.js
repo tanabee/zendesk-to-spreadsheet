@@ -37,7 +37,7 @@ function doGet(e) {
                     return '<p><strong>' + row[2] + ':' + row[4] + '</strong><br>' + row[3].replace(/\n/g, '<br>');
                   });
 
-  var contents = [ '<p><strong>' + ticket[5] + '</strong><br>' + ticket[3] + '</p>' ].concat(comments);
+  var contents = [ '<p><strong>' + ticket[5] + '</strong><br>' + ticket[3].replace(/\n/g, '<br>') + '</p>' ].concat(comments);
   var html = HtmlService
     .createTemplateFromFile('template')
     .getRawContent()
