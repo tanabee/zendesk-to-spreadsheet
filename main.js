@@ -22,7 +22,20 @@ function doGet(e) {
     return  HtmlService.createHtmlOutput('<h1>指定したチケットは存在しません</h1>');
   }
   var ticket = tickets[0];
-  return HtmlService.createHtmlOutput('<h1>' + ticket[2] + '</h1><p>' + ticket[3] + '</p><p>' + ticket[5] + '</p>');
+
+  var comments = SpreadsheetApp
+                  .getActiveSpreadsheet()
+                  .getSheetByName("comments")
+                  .getDataRange()
+                  .getValues()
+                  .filter(function (row) {
+                    return row[1] === ticket[0];
+                  });
+
+  var template = HtmlService.createTemplateFromFile('template');;
+  template.header = ticket[2];
+  template.contents = ticket[5] + ': ' + ticket[3];
+  return template.evaluate();
 }
 
 // チケット一覧の取得
