@@ -91,8 +91,7 @@ function fetchTicketComments() {
       commentIds = comments.map(function (row) { return row[0]; });
 
   for (var i = startIndex; i < tickets.length; i++) {
-    var ticket = tickets[i],
-        ticketId = ticket[0],
+    var ticketId = tickets[i][0],
         page = 1;
 
     // 特定のチケットのコメント一覧を取得
