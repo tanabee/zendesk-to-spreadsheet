@@ -169,6 +169,7 @@ function toDate(str) {
   return str.replace('T', ' ').replace('Z', '');
 }
 
+// シート名からスプレッドシートの値取得
 function getSpreadSheetValues(sheetName) {
   return SpreadsheetApp
     .getActiveSpreadsheet()
