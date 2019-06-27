@@ -6,10 +6,13 @@ var properties   = PropertiesService.getScriptProperties(),
     TRIGGER = 'TRIGGER',
     START_INDEX = 'START_INDEX';
 
+// HTTP リクエストに対して該当チケットのやり取りの HTML を返す
 function doGet(e) {
+  // リクエストにチケット ID がない場合
   if (!e.parameter.id) {
     return HtmlService.createHtmlOutput('<h1>チケット ID を指定してください: [url]?id=[チケットID]</h1>');
   }
+
   var tickets = SpreadsheetApp
                   .getActiveSpreadsheet()
                   .getSheetByName("tickets")
@@ -18,10 +21,13 @@ function doGet(e) {
                   .filter(function (row) {
                     return row[0] === Number(e.parameter.id);
                   });
+  // 該当チケットがない場合
   if (tickets.length === 0) {
     return  HtmlService.createHtmlOutput('<h1>指定したチケットは存在しません</h1>');
   }
+
   var ticket = tickets[0];
+  // 該当チケットのコメント一覧を取得して HTML 形式の配列に変換
   var comments = SpreadsheetApp
                   .getActiveSpreadsheet()
                   .getSheetByName("comments")
