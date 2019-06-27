@@ -87,14 +87,8 @@ function fetchTicketComments() {
 
   var tickets = getSpreadSheetValues("tickets")
       comments = getSpreadSheetValues("comments")
-      startIndex = parseInt(properties.getProperty(START_INDEX)) || 0;
-
-  // 先頭行の除去
-  tickets.shift();
-  comments.shift();
-  var commentIds = comments.map(function (row) {
-    return row[0];
-  });
+      startIndex = parseInt(properties.getProperty(START_INDEX)) || 0,
+      commentIds = comments.map(function (row) { return row[0]; });
 
   for (var i = startIndex; i < tickets.length; i++) {
     var ticket = tickets[i],
@@ -171,9 +165,11 @@ function toDate(str) {
 
 // シート名からスプレッドシートの値取得
 function getSpreadSheetValues(sheetName) {
-  return SpreadsheetApp
+  var values = SpreadsheetApp
     .getActiveSpreadsheet()
     .getSheetByName(sheetName)
     .getDataRange()
     .getValues();
+  values.shift();// ヘッダの除去
+  return values;
 }
