@@ -114,8 +114,6 @@ function fetchTicketComments() {
       page++;
     } while (response.next_page != null);
 
-    console.log(i);
-
     // RUNTIME を超えたら break;
     if ((new Date() - startTime) / (1000 * 60) > RUNTIME) {
       startIndex = i+1;
