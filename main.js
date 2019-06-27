@@ -13,11 +13,7 @@ function doGet(e) {
     return HtmlService.createHtmlOutput('<h1>チケット ID を指定してください: [url]?id=[チケットID]</h1>');
   }
 
-  var tickets = SpreadsheetApp
-                  .getActiveSpreadsheet()
-                  .getSheetByName("tickets")
-                  .getDataRange()
-                  .getValues()
+  var tickets = getSpreadSheetValues("tickets")
                   .filter(function (row) {
                     return row[0] === Number(e.parameter.id);
                   });
@@ -28,11 +24,7 @@ function doGet(e) {
 
   var ticket = tickets[0];
   // 該当チケットのコメント一覧を取得して HTML 形式の配列に変換
-  var comments = SpreadsheetApp
-                  .getActiveSpreadsheet()
-                  .getSheetByName("comments")
-                  .getDataRange()
-                  .getValues()
+  var comments = getSpreadSheetValues("comments")
                   .filter(function (row) {
                     return row[1] === ticket[0];
                   })
@@ -93,16 +85,8 @@ function fetchTicketComments() {
   // RUNTIME を超過した時に処理を中断するために開始時間を取る
   const startTime = new Date();
 
-  var tickets = SpreadsheetApp
-                  .getActiveSpreadsheet()
-                  .getSheetByName("tickets")
-                  .getDataRange()
-                  .getValues(),
-      comments = SpreadsheetApp
-                  .getActiveSpreadsheet()
-                  .getSheetByName("comments")
-                  .getDataRange()
-                  .getValues(),
+  var tickets = getSpreadSheetValues("tickets")
+      comments = getSpreadSheetValues("comments")
       startIndex = parseInt(properties.getProperty(START_INDEX)) || 0;
 
   // 先頭行の除去
@@ -183,4 +167,12 @@ function apiRequestToZendesk(resource, query) {
 // スプレッドシートで日付として認識させるため 'YYYY-MM-DDTHH:MM:SSZ' 形式から 'YYYY-MM-DD HH:MM:SS' 形式に変換
 function toDate(str) {
   return str.replace('T', ' ').replace('Z', '');
+}
+
+function getSpreadSheetValues(sheetName) {
+  return SpreadsheetApp
+    .getActiveSpreadsheet()
+    .getSheetByName(sheetName)
+    .getDataRange()
+    .getValues();
 }
