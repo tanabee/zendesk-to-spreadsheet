@@ -109,14 +109,14 @@ function fetchTicketComments() {
           return commentIds.indexOf(comment.id) === -1;
         })
         .map(function (comment) {
-        return [
-          comment.id,
-          ticketId,
-          comment.author_id,
-          comment.body,
-          toDate(comment.created_at),
-        ];
-      });
+          return [
+            comment.id,
+            ticketId,
+            comment.author_id,
+            comment.body,
+            toDate(comment.created_at),
+          ];
+        });
       comments = comments.concat(newComments);
       page++;
     } while (response.next_page != null);
