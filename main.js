@@ -115,7 +115,7 @@ function fetchTicketComments() {
             toDate(comment.created_at),
           ];
         });
-      comments = comments.concat(newComments);
+      comments = newComments.concat(comments);
       page++;
     } while (response.next_page != null);
 
