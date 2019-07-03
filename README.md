@@ -23,3 +23,11 @@ Zendesk ticket list exporter using Zendesk API. You can see ticket list on Googl
 - Trigger setting
     - daily
     - function: fetchTickets
+
+## Limitations
+
+When you use it, you should consider the following limitations.
+
+- Spreadsheet limitation: https://support.google.com/drive/answer/37603?hl=en
+- Apps Script Quotas (Script runtime) : https://developers.google.com/apps-script/guides/services/quotas
+- Zendesk API Rate limits: https://developer.zendesk.com/rest_api/docs/support/introduction#rate-limits
