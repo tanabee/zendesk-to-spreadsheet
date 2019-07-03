@@ -1,5 +1,7 @@
+var KEY = 'TRIGGER';
+
 // Trigger を登録
-function registerTrigger(key, functionName) {
+function registerTrigger(functionName) {
   var dt = new Date();
 	// 1 分後に Trigger セット
   dt.setMinutes(dt.getMinutes() + 1);
@@ -8,12 +10,12 @@ function registerTrigger(key, functionName) {
                            .at(dt)
                            .create()
                            .getUniqueId();
-	PropertiesService.getScriptProperties().setProperty(key, triggerId);
+	PropertiesService.getScriptProperties().setProperty(KEY, triggerId);
 }
 
 // Trigger の削除
-function deleteTrigger(key) {
-  var triggerId = PropertiesService.getScriptProperties().getProperty(key);
+function deleteTrigger() {
+  var triggerId = PropertiesService.getScriptProperties().getProperty(KEY);
   
   if (!triggerId) return;
   
@@ -23,5 +25,5 @@ function deleteTrigger(key) {
     ScriptApp.deleteTrigger(trigger);
   });
 
-  PropertiesService.getScriptProperties().deleteProperty(key);
+  PropertiesService.getScriptProperties().deleteProperty(KEY);
 }

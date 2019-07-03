@@ -3,8 +3,7 @@ var properties   = PropertiesService.getScriptProperties(),
     SUB_DOMAIN   = properties.getProperty("SUB_DOMAIN"),
     MAIL_ADDRESS = properties.getProperty("MAIL_ADDRESS"),
     RUNTIME = 5,// 実行時間（分）
-    TRIGGER = 'TRIGGER',
-    START_INDEX = 'START_INDEX';
+    KEY_START_INDEX = 'START_INDEX';
 
 // HTTP リクエストに対して該当チケットのやり取りの HTML を返す
 function doGet(e) {
@@ -82,7 +81,7 @@ function fetchTickets() {
     .setValues(tickets);
 
   // チケットコメント一覧を取得するトリガーをセットして終了
-  registerTrigger(TRIGGER, 'fetchTicketComments');
+  registerTrigger('fetchTicketComments');
 }
 
 // チケット内のコメント一覧の取得
@@ -93,7 +92,7 @@ function fetchTicketComments() {
 
   var tickets = getSpreadSheetValues("tickets")
       comments = getSpreadSheetValues("comments")
-      startIndex = parseInt(properties.getProperty(START_INDEX)) || 0,
+      startIndex = parseInt(properties.getProperty(KEY_START_INDEX)) || 0,
       commentIds = comments.map(function (row) { return row[0]; });
 
   for (var i = startIndex; i < tickets.length; i++) {
@@ -139,12 +138,12 @@ function fetchTicketComments() {
     .getRange('A1:E' + comments.length)
     .setValues(comments);
 
-  properties.setProperty(START_INDEX, startIndex);
-  deleteTrigger(TRIGGER);
+  properties.setProperty(KEY_START_INDEX, startIndex);
+  deleteTrigger();
 
   // RUNTIME で中断した場合は、再取得用のトリガーセット
   if (startIndex !== 0) {
-    registerTrigger(TRIGGER, 'fetchTicketComments');
+    registerTrigger('fetchTicketComments');
   }
 }
 
