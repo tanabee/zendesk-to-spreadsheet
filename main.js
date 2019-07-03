@@ -48,23 +48,29 @@ function doGet(e) {
 // チケット一覧の取得
 function fetchTickets() {
 
-  var tickets = [];
+  var tickets = getSpreadSheetValues("tickets");
+  var ticketIds = tickets.map(function (row) { return row[0]; });
   var page = 1;
 
   // チケット一覧を取得（ページ数分まわす）
   do {
     var response = apiRequestToZendesk('tickets.json', '?sort_by=created_at&sort_order=desc&page=' + page);
-    tickets = tickets.concat(response.tickets.map(function (ticket) {
-      return [
-        ticket.id,
-        ticket.brand_id,
-        ticket.subject,
-        ticket.description,
-        ticket.tags.join(','),
-        toDate(ticket.created_at),
-        toDate(ticket.updated_at),
-      ];
-    }));
+    var newTickets = response.tickets
+        .filter(function (ticket) {
+          return ticketIds.indexOf(ticket.id) === -1;
+        })
+        .map(function (ticket) {
+          return [
+            ticket.id,
+            ticket.brand_id,
+            ticket.subject,
+            ticket.description,
+            ticket.tags.join(','),
+            toDate(ticket.created_at),
+            toDate(ticket.updated_at),
+          ];
+        });
+    tickets = newTickets.concat(tickets);
     page++;
   } while (response.next_page != null);
 
