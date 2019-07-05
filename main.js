@@ -5,45 +5,6 @@ var properties   = PropertiesService.getScriptProperties(),
     RUNTIME = 5,// 実行時間（分）
     KEY_START_INDEX = 'START_INDEX';
 
-// HTTP リクエストに対して該当チケットのやり取りの HTML を返す
-function doGet(e) {
-  // リクエストにチケット ID がない場合
-  if (!e.parameter.id) {
-    return HtmlService.createHtmlOutput('<h1>チケット ID を指定してください: [url]?id=[チケットID]</h1>');
-  }
-
-  var tickets = getSpreadSheetValues("tickets")
-                  .filter(function (row) {
-                    return row[0] === Number(e.parameter.id);
-                  });
-  // 該当チケットがない場合
-  if (tickets.length === 0) {
-    return  HtmlService.createHtmlOutput('<h1>指定したチケットは存在しません</h1>');
-  }
-
-  var ticket = tickets[0];
-  // 該当チケットのコメント一覧を取得して HTML 形式の配列に変換
-  var comments = getSpreadSheetValues("comments")
-                  .filter(function (row) {
-                    return row[1] === ticket[0];
-                  })
-                  .sort(function (a, b) {
-                    return (a[4] > b[4]) ? 1 : -1;
-                  })
-                  .map(function (row) {
-                    return '<p><strong>' + row[2] + ':' + row[4] + '</strong><br>' + row[3].replace(/\n/g, '<br>');
-                  });
-
-  var contents = [ '<p><strong>' + ticket[5] + '</strong><br>' + ticket[3].replace(/\n/g, '<br>') + '</p>' ].concat(comments);
-  var html = HtmlService
-    .createTemplateFromFile('template')
-    .getRawContent()
-    .replace('__HEADER__', ticket[2])
-    .replace('__CONTENTS__', contents.join(''));
-
-  return HtmlService.createHtmlOutput(html);
-}
-
 // チケット一覧の取得
 function fetchTickets() {
 
@@ -153,6 +114,45 @@ function fetchTicketComments() {
   if (startIndex !== 0) {
     registerTrigger('fetchTicketComments');
   }
+}
+
+// HTTP リクエストに対して該当チケットのやり取りの HTML を返す
+function doGet(e) {
+  // リクエストにチケット ID がない場合
+  if (!e.parameter.id) {
+    return HtmlService.createHtmlOutput('<h1>チケット ID を指定してください: [url]?id=[チケットID]</h1>');
+  }
+
+  var tickets = getSpreadSheetValues("tickets")
+                  .filter(function (row) {
+                    return row[0] === Number(e.parameter.id);
+                  });
+  // 該当チケットがない場合
+  if (tickets.length === 0) {
+    return  HtmlService.createHtmlOutput('<h1>指定したチケットは存在しません</h1>');
+  }
+
+  var ticket = tickets[0];
+  // 該当チケットのコメント一覧を取得して HTML 形式の配列に変換
+  var comments = getSpreadSheetValues("comments")
+                  .filter(function (row) {
+                    return row[1] === ticket[0];
+                  })
+                  .sort(function (a, b) {
+                    return (a[4] > b[4]) ? 1 : -1;
+                  })
+                  .map(function (row) {
+                    return '<p><strong>' + row[2] + ':' + row[4] + '</strong><br>' + row[3].replace(/\n/g, '<br>');
+                  });
+
+  var contents = [ '<p><strong>' + ticket[5] + '</strong><br>' + ticket[3].replace(/\n/g, '<br>') + '</p>' ].concat(comments);
+  var html = HtmlService
+    .createTemplateFromFile('template')
+    .getRawContent()
+    .replace('__HEADER__', ticket[2])
+    .replace('__CONTENTS__', contents.join(''));
+
+  return HtmlService.createHtmlOutput(html);
 }
 
 // Zendesk へ API リクエスト
