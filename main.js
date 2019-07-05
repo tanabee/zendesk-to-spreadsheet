@@ -54,10 +54,7 @@ function fetchTickets() {
   // チケット一覧を取得（ページ数分まわす）
   do {
     var response = apiRequestToZendesk('tickets.json', '?sort_by=created_at&sort_order=desc&page=' + page);
-    var newTickets = response.tickets
-        .filter(function (ticket) {
-          return ticketIds.indexOf(ticket.id) === -1;
-        })
+    var fetchedTickets = response.tickets
         .map(function (ticket) {
           return [
             ticket.id,
@@ -69,6 +66,10 @@ function fetchTickets() {
             toDate(ticket.updated_at),
           ];
         });
+    var newTickets = fetchedTickets.filter(function (ticket) {
+          return ticketIds.indexOf(ticket.id) === -1;
+        });
+
     tickets = newTickets.concat(tickets);
     page++;
   } while (response.next_page != null);
