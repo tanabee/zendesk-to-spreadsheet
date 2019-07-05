@@ -67,8 +67,15 @@ function fetchTickets() {
           ];
         });
     var newTickets = fetchedTickets.filter(function (ticket) {
-          return ticketIds.indexOf(ticket.id) === -1;
-        });
+      return ticketIds.indexOf(ticket[0]) === -1;
+    });
+
+    // 既存のチケットを上書き
+    fetchedTickets.forEach(function (ticket) {
+      const index = ticketIds.indexOf(ticket[0]);
+      if (index === -1) return;
+      tickets[index] = ticket;
+    });
 
     tickets = newTickets.concat(tickets);
     page++;
