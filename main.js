@@ -8,28 +8,28 @@ var properties   = PropertiesService.getScriptProperties(),
 // チケット一覧の取得
 function fetchTickets() {
 
-  var tickets = getSpreadSheetValues("tickets");
-  var ticketIds = tickets.map(function (row) { return row[0]; });
-  var page = 1;
+  var tickets = getSpreadSheetValues("tickets"),
+      ticketIds = tickets.map(function (row) { return row[0]; }),
+      page = 1;
 
   // チケット一覧を取得（ページ数分まわす）
   do {
-    var response = apiRequestToZendesk('tickets.json', '?sort_by=created_at&sort_order=desc&page=' + page);
-    var fetchedTickets = response.tickets
-        .map(function (ticket) {
-          return [
-            ticket.id,
-            ticket.brand_id,
-            ticket.subject,
-            ticket.description,
-            ticket.tags.join(','),
-            toDate(ticket.created_at),
-            toDate(ticket.updated_at),
-          ];
+    var response = apiRequestToZendesk('tickets.json', '?sort_by=created_at&sort_order=desc&page=' + page),
+        fetchedTickets = response.tickets
+          .map(function (ticket) {
+            return [
+              ticket.id,
+              ticket.brand_id,
+              ticket.subject,
+              ticket.description,
+              ticket.tags.join(','),
+              toDate(ticket.created_at),
+              toDate(ticket.updated_at),
+            ];
+          }),
+        newTickets = fetchedTickets.filter(function (ticket) {
+          return ticketIds.indexOf(ticket[0]) === -1;
         });
-    var newTickets = fetchedTickets.filter(function (ticket) {
-      return ticketIds.indexOf(ticket[0]) === -1;
-    });
 
     // 既存のチケットを上書き
     fetchedTickets.forEach(function (ticket) {
@@ -132,39 +132,39 @@ function doGet(e) {
     return  HtmlService.createHtmlOutput('<h1>指定したチケットは存在しません</h1>');
   }
 
-  var ticket = tickets[0];
-  // 該当チケットのコメント一覧を取得して HTML 形式の配列に変換
-  var comments = getSpreadSheetValues("comments")
-                  .filter(function (row) {
-                    return row[1] === ticket[0];
-                  })
-                  .sort(function (a, b) {
-                    return (a[4] > b[4]) ? 1 : -1;
-                  })
-                  .map(function (row) {
-                    return '<p><strong>' + row[2] + ':' + row[4] + '</strong><br>' + row[3].replace(/\n/g, '<br>');
-                  });
-
-  var contents = [ '<p><strong>' + ticket[5] + '</strong><br>' + ticket[3].replace(/\n/g, '<br>') + '</p>' ].concat(comments);
-  var html = HtmlService
-    .createTemplateFromFile('template')
-    .getRawContent()
-    .replace('__HEADER__', ticket[2])
-    .replace('__CONTENTS__', contents.join(''));
+  var ticket = tickets[0],
+      // 該当チケットのコメント一覧を取得して HTML 形式の配列に変換
+      comments = getSpreadSheetValues("comments")
+        .filter(function (row) {
+          return row[1] === ticket[0];
+        })
+        .sort(function (a, b) {
+          return (a[4] > b[4]) ? 1 : -1;
+        })
+        .map(function (row) {
+          return '<p><strong>' + row[2] + ':' + row[4] + '</strong><br>' + row[3].replace(/\n/g, '<br>');
+        }),
+      contents = [ '<p><strong>' + ticket[5] + '</strong><br>' + ticket[3].replace(/\n/g, '<br>') + '</p>' ].concat(comments),
+      html = HtmlService
+        .createTemplateFromFile('template')
+        .getRawContent()
+        .replace('__HEADER__', ticket[2])
+        .replace('__CONTENTS__', contents.join(''));
 
   return HtmlService.createHtmlOutput(html);
 }
 
 // Zendesk へ API リクエスト
 function apiRequestToZendesk(resource, query) {
-  var options = {
-    'method': 'get',
-    'contentType': 'application/json',
-    'headers': {
-      'Authorization': 'Basic ' + Utilities.base64Encode( MAIL_ADDRESS + '/token:' + API_TOKEN )
-    }
-  };
-  var res = UrlFetchApp.fetch('https://' + SUB_DOMAIN + '.zendesk.com/api/v2/' + resource + query, options);
+  var url = [ 'https://', SUB_DOMAIN, '.zendesk.com/api/v2/', resource, query ].join(''),
+      options = {
+        'method': 'get',
+        'contentType': 'application/json',
+        'headers': {
+          'Authorization': 'Basic ' + Utilities.base64Encode( MAIL_ADDRESS + '/token:' + API_TOKEN )
+        }
+      },
+      res = UrlFetchApp.fetch(url, options);
   return JSON.parse(res);
 }
 
