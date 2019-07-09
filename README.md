@@ -1,6 +1,6 @@
 ## About
 
-Zendesk ticket list exporter using Zendesk API. You can see ticket list on Google Spreadsheet.
+Export Zendesk inquiry data to a spreadsheet using the Zendesk API.
  
 ## Environment
 
@@ -8,8 +8,8 @@ Zendesk ticket list exporter using Zendesk API. You can see ticket list on Googl
 
 ## Installation
 
-1. Open https://docs.google.com/spreadsheets/d/1WeALWBWMPyluRfznTMZvt34Rrkr0ZTaOz3a1WzJNNNA/edit?usp=sharing
-- File > Make a copy... 
+1. Open https://docs.google.com/spreadsheets/d/1WeALWBWMPyluRfznTMZvt34Rrkr0ZTaOz3a1WzJNNNA/copy
+- Select Make a copy
 - Tools > Script editor (Then it opens Google Apps Script editor) 
 - File > Project properties
 - Script properties > Add rows
