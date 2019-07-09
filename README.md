@@ -18,11 +18,16 @@ Export Zendesk inquiry data to a spreadsheet using the Zendesk API.
     - SUB_DOMAIN: Zendesk subdomain
 - Save
 - Select function
-    - select main function
+    - select fetchTickets function
 - Select play button
+- Edit > Current project's triggers
+- Add Trigger
 - Trigger setting
-    - daily
-    - function: fetchTickets
+    - Choose which function to run: fetchTickets
+    - Select event source: Time-driven
+    - Select type of time based trigger: Day timer daily
+- Save
+- Done!
 
 ## Limitations
 
